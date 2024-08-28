@@ -110,7 +110,7 @@
                                                         <i class="fas fa-plus"></i> Add Child
                                                     </a>
 
-                                                    <!-- Child Modal -->
+                                                    <!-- Child  Modal -->
                                                     <div class="modal fade" id="childModal" tabindex="-1" role="dialog"
                                                         aria-labelledby="childModalLabel" aria-hidden="true">
                                                         <div class="modal-dialog" role="document">

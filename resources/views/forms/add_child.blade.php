@@ -109,44 +109,6 @@
                                                         data-field-options="{{ $field->values }}">
                                                         <i class="fas fa-plus"></i> Add Child
                                                     </a>
-
-                                                    <!-- Child  Modal -->
-                                                    <div class="modal fade" id="childModal" tabindex="-1" role="dialog"
-                                                        aria-labelledby="childModalLabel" aria-hidden="true">
-                                                        <div class="modal-dialog" role="document">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title" id="childModalLabel">Add Child</h5>
-                                                                    <button type="button" class="close" data-dismiss="modal"
-                                                                        aria-label="Close">
-                                                                        <span aria-hidden="true">&times;</span>
-                                                                    </button>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    <form id="child-form">
-                                                                        <!-- Dynamic fields will be appended here -->
-                                                                        @foreach (explode(',', $field->values) as $option)
-                                                                        <div class="form-group">
-                                                                            <label for="child-select">{{ $option }}</label>
-                                                                            <select name="form_id" class="form-control">
-                                                                                @foreach ($forms as $form)
-                                                                                    <option value="{{ $form->id }}">
-                                                                                        {{ $form->name }}</option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                        @endforeach
-                                                                    </form>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary"
-                                                                        data-dismiss="modal">Close</button>
-                                                                    <button type="button" id="save-child-btn"
-                                                                        class="btn btn-primary">Save</button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
                                                 </div>
                                             @break
                                         @endswitch
@@ -163,23 +125,69 @@
         </div>
     </div>
 
-    <!-- Include Trix Editor -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/trix/1.3.1/trix.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/trix/1.3.1/trix.js"></script>
-    <script>
-        // JavaScript to handle dynamic modal fields
+    <!-- Child Modal -->
+    <div class="modal fade" id="childModal" tabindex="-1" role="dialog" aria-labelledby="childModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="childModalLabel">Add Child</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="child-form" action="{{ route('child.store') }}" method="POST">
+                        @csrf
+                        <div id="dynamic-child-fields">
+                            <!-- Dynamic fields will be appended here -->
+                        </div>
+                        <input type="hidden" name="parent_form_id" value="{{ $form->id }}">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" id="save-child-btn" class="btn btn-primary" form="child-form">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+<!-- Include Trix Editor and required JS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/trix/1.3.1/trix.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/trix/1.3.1/trix.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.add-child-btn').forEach(button => {
-            button.addEventListener('click', function(e) {
+            button.addEventListener('click', function (e) {
                 e.preventDefault();
-                let form = document.getElementById('child-form');
-                form.reset(); // Reset the form
+
+                let dynamicFields = document.getElementById('dynamic-child-fields');
+                dynamicFields.innerHTML = ''; // Reset fields
+
+                let fieldType = this.getAttribute('data-field-type');
+                let fieldLabel = this.getAttribute('data-field-label');
+                let fieldOptions = this.getAttribute('data-field-options').split(',');
+
+                if (fieldType === 'select' || fieldType === 'radio' || fieldType === 'checkbox') {
+                    fieldOptions.forEach(option => {
+                        let optionLabel = option.trim();
+                        let formGroup = document.createElement('div');
+                        formGroup.className = 'form-group';
+                        formGroup.innerHTML = `
+                            <label for="${fieldType}_${optionLabel}">${optionLabel}</label>
+                            <select name="form_id" class="form-control">
+                                @foreach ($forms as $form)
+                                    <option value="{{ $form->id }}">{{ $form->name }}</option>
+                                @endforeach
+                            </select>
+                        `;
+                        dynamicFields.appendChild(formGroup);
+                    });
+                }
+
                 $('#childModal').modal('show');
             });
         });
-
-        document.getElementById('save-child-btn').addEventListener('click', function() {
-            // Logic to save the selected form or append it to the parent form
-            $('#childModal').modal('hide');
-        });
-    </script>
-@endsection
+    });
+</script>

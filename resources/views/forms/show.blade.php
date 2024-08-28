@@ -12,16 +12,14 @@
             <div class="card">
                 <div class="card-body">
                     @foreach ($form->fields as $field)
-                        <div class="form-group">
+                        <div class="form-group" data-field-type="{{ $field->type }}">
                             <!-- Label for the field -->
                             <label for="{{ $field->name }}">{{ $field->label }}</label>
 
                             @switch($field->type)
                                 @case('select')
-                                    <select name="{{ $field->name }}" id="{{ $field->name }}" class="form-control">
-                                        <!-- Placeholder option -->
+                                    <select name="{{ $field->name }}" id="{{ $field->name }}" class="form-control field-select">
                                         <option value="" disabled selected>{{ ucfirst($field->type) }}</option>
-                                        <!-- Permanent title as the first option -->
                                         <option value="" disabled>{{ ucfirst($field->type) }}s</option>
                                         @foreach (explode(',', $field->values) as $value)
                                             <option value="{{ $value }}">{{ $value }}</option>
@@ -58,7 +56,52 @@
                     @endforeach
                 </div>
             </div>
+
+            <!-- Menu tambahan yang akan muncul berdasarkan pilihan -->
+            <div id="additional-options" style="display: none;">
+                <!-- Konten menu tambahan -->
+                <h4>Additional Options</h4>
+                <!-- Misalnya, dropdown atau input tambahan -->
+                <div class="form-group">
+                    <label for="additional_input">Additional Input</label>
+                    <input type="text" id="additional_input" class="form-control">
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fields = document.querySelectorAll('.form-group');
+
+    // Fungsi untuk menunjukkan atau menyembunyikan menu tambahan
+    function toggleAdditionalOptions() {
+        const additionalOptions = document.getElementById('additional-options');
+        let showOptions = false;
+
+        fields.forEach(field => {
+            const fieldType = field.getAttribute('data-field-type');
+            const fieldElement = field.querySelector('select, input[type="radio"], input[type="checkbox"]');
+
+            if (fieldElement && fieldElement.checked) {
+                showOptions = true; // Menampilkan menu tambahan jika ada field yang dipilih
+            }
+        });
+
+        additionalOptions.style.display = showOptions ? 'block' : 'none';
+    }
+
+    // Menambahkan event listener untuk perubahan pada field
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('change', toggleAdditionalOptions);
+    });
+
+    // Inisialisasi tampilan awal
+    toggleAdditionalOptions();
+});
+</script>
+@endsection
+
 @endsection
